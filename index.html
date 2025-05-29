@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Previewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent-pink: #ff6ec4;
+      --accent-blue: #42a5f5;
+      --accent-green: #66bb6a;
+      --accent-yellow: #ffca28;
+      --bg1: #ff9a9e;
+      --bg2: #fad0c4;
+      --bg3: #fad0c4;
+      --bg4: #fcb69f;
+      --window-bg: rgba(255, 255, 255, 0.25);
+      --shadow: rgba(0, 0, 0, 0.15);
+      --transition: 0.3s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3), var(--bg4));
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      position: relative;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .blob {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: var(--accent-pink);
+      opacity: 0.7;
+      border-radius: 50%;
+      filter: blur(60px);
+      animation: blobAnim 12s ease-in-out infinite;
+      mix-blend-mode: multiply;
+      cursor: pointer;
+      transition: transform var(--transition), opacity var(--transition);
+    }
+    .blob:nth-child(1) { background: var(--accent-pink); top: -5%; left: -5%; animation-duration: 12s; }
+    .blob:nth-child(2) { background: var(--accent-blue); top: 15%; right: -10%; animation-duration: 14s; }
+    .blob:nth-child(3) { background: var(--accent-green); bottom: -10%; left: 18%; animation-duration: 13s; }
+    .blob:nth-child(4) { background: var(--accent-yellow); bottom: 8%; right: 12%; animation-duration: 11s; }
+    @keyframes blobAnim {
+      0% { transform: scale(1) translate(0,0); }
+      33% { transform: scale(1.3) translate(20px, -15px); }
+      66% { transform: scale(0.8) translate(-15px, 25px); }
+      100% { transform: scale(1) translate(0,0); }
+    }
+    /* Pop effect */
+    @keyframes pop {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.5); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    .pop {
+      animation: pop 0.6s forwards;
+    }
+    /* Confetti */
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: #fff;
+      opacity: 0.9;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: confettiAnim 1s ease-out forwards;
+      z-index: 2;
+    }
+    @keyframes confettiAnim {
+      to { transform: translate(var(--dx), var(--dy)) rotate(720deg); opacity: 0; }
+    }
+    .window {
+      position: relative;
+      width: 90vw;
+      max-width: 1200px;
+      height: 80vh;
+      background: var(--window-bg);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px var(--shadow);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+    .title-bar {
+      height: 40px;
+      background: rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      backdrop-filter: blur(10px);
+    }
+    .circles { display: flex; gap: 8px; }
+    .circle { width: 14px; height: 14px; border-radius: 50%; }
+    .red { background: var(--accent-pink); }
+    .yellow { background: var(--accent-yellow); }
+    .green { background: var(--accent-green); }
+    .blue { background: var(--accent-blue); }
+    .toolbar {
+      padding: 10px 20px;
+      display: flex;
+      justify-content: flex-end;
+      background: rgba(255,255,255,0.4);
+      border-bottom: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(10px);
+    }
+    .button {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 6px 20px var(--shadow);
+      transition: box-shadow var(--transition), transform var(--transition);
+      font-family: 'Rubik', sans-serif;
+    }
+    .button:hover { transform: translateY(-3px); box-shadow: 0 8px 30px var(--shadow); }
+    .content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      transition: all var(--transition);
+    }
+    .panel { display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.4); overflow: hidden; }
+    .panel:last-child { border-right: none; }
+    .panel-header {
+      padding: 16px;
+      background: rgba(255,255,255,0.4);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #262626;
+      border-left: 6px solid var(--accent-blue);
+      backdrop-filter: blur(10px);
+    }
+    .editor {
+      flex: 1;
+      background: #fff;
+      color: #333;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      padding: 20px;
+      border: none;
+      outline: none;
+      overflow: auto;
+    }
+    .preview {
+      flex: 1;
+      background: #fafafa;
+      border: none;
+      overflow: auto;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background blobs -->
+  <div class="blob" id="blob1"></div>
+  <div class="blob" id="blob2"></div>
+  <div class="blob" id="blob3"></div>
+  <div class="blob" id="blob4"></div>
+
+  <div class="window">
+    <div class="title-bar">
+      <div class="circles">
+        <div class="circle red"></div>
+        <div class="circle yellow"></div>
+        <div class="circle green"></div>
+        <div class="circle blue"></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="button" id="runBtn">Run ▶️</button>
+    </div>
+    <div class="content">
+      <div class="panel">
+        <div class="panel-header">Editor</div>
+        <textarea id="htmlInput" class="editor" placeholder="Paste HTML here…"></textarea>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Preview</div>
+        <iframe id="previewFrame" class="preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Preview functionality
+    document.getElementById('runBtn').addEventListener('click', () => {
+      document.getElementById('previewFrame').srcdoc = document.getElementById('htmlInput').value;
+    });
+    // Blob click pop & confetti effect
+    document.querySelectorAll('.blob').forEach(blob => {
+      blob.addEventListener('click', (e) => {
+        blob.classList.add('pop');
+        setTimeout(() => blob.classList.remove('pop'), 600);
+        // create confetti
+        for (let i = 0; i < 25; i++) {
+          const conf = document.createElement('div');
+          conf.classList.add('confetti');
+          const angle = Math.random() * 2 * Math.PI;
+          const dist = 100 + Math.random() * 100;
+          const dx = Math.cos(angle) * dist + 'px';
+          const dy = Math.sin(angle) * dist + 'px';
+          conf.style.setProperty('--dx', dx);
+          conf.style.setProperty('--dy', dy);
+          const colors = ['var(--accent-pink)', 'var(--accent-blue)', 'var(--accent-green)', 'var(--accent-yellow)'];
+          conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          conf.style.left = (e.clientX) + 'px';
+          conf.style.top = (e.clientY) + 'px';
+          conf.style.zIndex = '2';
+          document.body.appendChild(conf);
+          setTimeout(() => conf.remove(), 1000);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
